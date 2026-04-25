@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": ".osm.pbf reader and writer",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "node --test test/**/*.test.js"
   },
@@ -24,7 +25,7 @@
     "node": ">=24.0.0"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "dependencies": {
     "pbf": "^4.0.1"
