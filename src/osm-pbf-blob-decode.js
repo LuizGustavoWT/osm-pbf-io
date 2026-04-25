@@ -1,36 +1,32 @@
-const protobuf = require('protobufjs');
 const zlib = require('zlib');
+const Pbf = require('pbf').default;
+const {readHeaderBlock, readPrimitiveBlock} = require('./protos/osmformat-pbf');
 const decodePrimitiveBlockSettings = require('./decoder/primitive-block-settings');
 const decodeDenseNodes = require('./decoder/dense-nodes');
 const decodeNodes = require('./decoder/nodes');
 const decodeWays = require('./decoder/ways');
 const decodeRelations = require('./decoder/relations');
-const root = protobuf.loadSync(__dirname + '/protos/osm-format.proto');
-const messages = {
-  headerBlock: root.lookupType('HeaderBlock'),
-  primitiveBlock: root.lookupType('PrimitiveBlock')
-};
 
 module.exports = (blob, blobHeader, parentEvents, withInfos = true) => {
   let rawBlob;
   if (blob.raw && blob.raw.length) {
     rawBlob = blob.raw;
-  } else if (blob.zlibData && blob.zlibData.length) {
-    rawBlob = zlib.inflateSync(blob.zlibData.buffer.slice(blob.zlibData.offset));
+  } else if (blob.zlib_data && blob.zlib_data.length) {
+    rawBlob = zlib.inflateSync(Buffer.from(blob.zlib_data));
   } else {
     console.warn('Unreadable Blob');
     return;
   }
 
   if (blobHeader.type === 'OSMHeader') {
-    parentEvents.emit('header', messages.headerBlock.decode(rawBlob));
+    parentEvents.emit('header', readHeaderBlock(new Pbf(rawBlob)));
     return;
   } else if (blobHeader.type !== 'OSMData') {
-    console.warn(`Unknwon BlobHeader type: ${blobHeader.type}`);
+    console.warn(`Unknown BlobHeader type: ${blobHeader.type}`);
     return;
   }
   
-  const primitiveBlock = messages.primitiveBlock.decode(rawBlob);
+  const primitiveBlock = readPrimitiveBlock(new Pbf(rawBlob));
 
   parentEvents.emit('primitive', primitiveBlock);
 

@@ -28,7 +28,7 @@ module.exports = (dense, settings) => {
       changeSet += parseInt(dense.denseinfo.changeset[i]);
       timestamp += parseInt(dense.denseinfo.timestamp[i]);
       uid += parseInt(dense.denseinfo.uid[i]);
-      userSid += parseInt(dense.denseinfo.userSid[i]);
+      userSid += parseInt(dense.denseinfo.user_sid[i]);
       version += parseInt(dense.denseinfo.version[i]);
 
       info['changeSet'] = changeSet;
@@ -39,11 +39,15 @@ module.exports = (dense, settings) => {
     }
 
     const tags = {};
-    while (dense.keysVals.length > tagKeyValueIndex && dense.keysVals[tagKeyValueIndex]) {
-      tags[settings.stringTable.s[dense.keysVals[tagKeyValueIndex++]]] =
-        settings.stringTable.s[dense.keysVals[tagKeyValueIndex++]];
+    if (tagKeyValueIndex < dense.keys_vals.length && dense.keys_vals[tagKeyValueIndex] !== 0) {
+      while (dense.keys_vals[tagKeyValueIndex] !== 0) {
+        tags[settings.stringTable.s[dense.keys_vals[tagKeyValueIndex++]]] =
+          settings.stringTable.s[dense.keys_vals[tagKeyValueIndex++]];
+      }
     }
-    tagKeyValueIndex++;
+    if (tagKeyValueIndex < dense.keys_vals.length && dense.keys_vals[tagKeyValueIndex] === 0) {
+      tagKeyValueIndex++;
+    }
 
     nodes.push(createNode(
       id,

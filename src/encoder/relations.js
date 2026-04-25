@@ -4,7 +4,7 @@ const encodeInfo = require('./pbf-info');
 module.exports = (relations, settings, stringTable) => relations.map(relation => {
   const encodedTags = encodeTags(relation.tags, stringTable);
 
-  const rolesSids = [];
+  const roles_sid = [];
   const memids = [];
   const types = [];
 
@@ -13,11 +13,11 @@ module.exports = (relations, settings, stringTable) => relations.map(relation =>
   for (let m = 0; m < relation.members.length; m++) {
     const member = relation.members[m];
 
-    rolesSid = stringTable.add(member.role);
-    memid = member.id - prevMemId;
-    type = member.type;
+    const rolesSid = stringTable.add(member.role);
+    const memid = member.id - prevMemId;
+    const type = member.type;
 
-    rolesSids.push(rolesSid);
+    roles_sid.push(rolesSid);
     memids.push(memid);
     types.push(type);
 
@@ -29,7 +29,7 @@ module.exports = (relations, settings, stringTable) => relations.map(relation =>
     keys: encodedTags.keys,
     vals: encodedTags.vals,
     info: encodeInfo(relation, settings, stringTable),
-    rolesSid: rolesSids,
+    roles_sid: roles_sid,
     memids: memids,
     types: types
   };

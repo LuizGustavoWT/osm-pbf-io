@@ -1,12 +1,11 @@
-const protobuf = require('protobufjs');
+const Pbf = require('pbf').default;
 const geoType = require('./osm-object-type');
 const encodeNodes = require('./encoder/nodes');
 const encodeDenseNodes = require('./encoder/dense-nodes');
 const encodeWays = require('./encoder/ways');
 const encodeRelations = require('./encoder/relations');
 const encodeRawBlob = require('./encoder/raw-blob');
-const root = protobuf.loadSync(__dirname + '/protos/osm-format.proto');
-const message = root.lookupType('PrimitiveBlock');
+const {writePrimitiveBlock} = require('./protos/osmformat-pbf');
 
 const defaultGranularity = 100;
 const defaultDateGranularity = 1000;
@@ -15,12 +14,12 @@ const defaultLngOffset = 0;
 
 class StringTable {
   constructor() {
-    this.strings = [];
-    this.dict = {};
+    this.strings = [''];
+    this.dict = {'': 0};
   }
 
   add(str) {
-    if (this.dict[str]) {
+    if (this.dict[str] !== undefined) {
       return this.dict[str];
     }
     
@@ -39,9 +38,9 @@ module.exports = (geos, compress = true, denseNode = true) => {
 
   const settings = {
     granularity: defaultGranularity,
-    latOffset: defaultLatOffset,
-    lngOffset: defaultLngOffset,
-    dateGranularity: defaultDateGranularity
+    lat_offset: defaultLatOffset,
+    lon_offset: defaultLngOffset,
+    date_granularity: defaultDateGranularity
   };
 
   const primitiveGroup = [];
@@ -81,15 +80,18 @@ module.exports = (geos, compress = true, denseNode = true) => {
 
   const primitiveBlock = {
     granularity: settings.granularity,
-    latOffset: settings.latOffset,
-    lonOffset: settings.lngOffset,
-    dateGranularity: settings.dateGranularity,
+    lat_offset: settings.lat_offset,
+    lon_offset: settings.lon_offset,
+    date_granularity: settings.date_granularity,
     primitivegroup: primitiveGroup,
     stringtable: {
       s: stringTable.strings.map(str => Buffer.from(str))
     }
   };
-  const rawBlob = message.encode(primitiveBlock).finish();
+
+  const pbf = new Pbf();
+  writePrimitiveBlock(primitiveBlock, pbf);
+  const rawBlob = pbf.finish();
 
   return encodeRawBlob(rawBlob, compress);
 };

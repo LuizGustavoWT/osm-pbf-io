@@ -9,7 +9,7 @@ module.exports = (pbfRelations, settings) => pbfRelations.map(pbfRelation => {
     memberId += parseInt(pbfRelation.memids[i]);
     members.push({
       id: memberId,
-      role: settings.stringTable.s[pbfRelation.rolesSid[i]],
+      role: settings.stringTable.s[pbfRelation.roles_sid[i]],
       type: pbfRelation.types[i]
     });
   }

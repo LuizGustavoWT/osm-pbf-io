@@ -1,27 +1,32 @@
 {
-  "name": "osm-pbf-io",
-  "version": "1.0.0",
+  "name": "@LuizGustavoWT/osm-pbf-io",
+  "version": "2.0.0",
   "description": ".osm.pbf reader and writer",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test test/**/*.test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ponlawat-w/osm-pbf-io.git"
+    "url": "git+https://github.com/LuizGustavoWT/osm-pbf-io.git"
   },
   "keywords": [
     "osm-pbf",
     "openstreetmap"
   ],
-  "author": "Ponlawat W.",
+  "author": "Luiz G. W. Thums",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ponlawat-w/osm-pbf-io/issues"
+    "url": "https://github.com/LuizGustavoWT/osm-pbf-io/issues"
   },
-  "homepage": "https://github.com/ponlawat-w/osm-pbf-io#readme",
+  "homepage": "https://github.com/LuizGustavoWT/osm-pbf-io#readme",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "dependencies": {
-    "protobufjs": "6.8.8",
-    "zlib": "1.0.5"
+    "pbf": "^4.0.1"
   }
 }

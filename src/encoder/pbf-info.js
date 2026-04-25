@@ -7,7 +7,7 @@ module.exports = (geo, settings, stringTable) => {
     pbfInfoObj.version = geo.version;
   }
   if (geo.timestamp) {
-    pbfInfoObj.timestamp = encodeTimestamp(geo.timestamp, settings.dateGranularity);
+    pbfInfoObj.timestamp = encodeTimestamp(geo.timestamp, settings.date_granularity);
   }
   if (geo.changeSet) {
     pbfInfoObj.changeset = geo.changeSet;
@@ -16,7 +16,7 @@ module.exports = (geo, settings, stringTable) => {
     pbfInfoObj.uid = geo.uid;
   }
   if (geo.username) {
-    pbfInfoObj.userSid = stringTable.add(geo.username);
+    pbfInfoObj.user_sid = stringTable.add(geo.username);
   }
 
   return pbfInfoObj;

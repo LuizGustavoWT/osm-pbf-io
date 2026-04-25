@@ -3,7 +3,7 @@
 ## Example
 
 ```js
-const OsmPbfReader = require('osm-pbf-io').Reader;
+const OsmPbfReader = require('@LuizGustavoWT/osm-pbf-io').Reader;
 
 const reader = new OsmPbfReader('./thailand-latest.osm.pbf');
 
@@ -40,8 +40,8 @@ reader.start();
 ## Example
 
 ```js
-const OsmPbfTypes = require('osm-pbf-io').Types;
-const OsmPbfWriter = require('osm-pbf-io').Writer;
+const OsmPbfTypes = require('@LuizGustavoWT/osm-pbf-io').Types;
+const OsmPbfWriter = require('@LuizGustavoWT/osm-pbf-io').Writer;
 
 const nodes = [
   {id: 1, type: OsmPbfTypes.node, lat: 18.766886, lng: 99.017465, tags: {name: 'test_node'}},

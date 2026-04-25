@@ -1,12 +1,8 @@
 const fs = require('fs');
-const protobuf = require('protobufjs');
+const Pbf = require('pbf').default;
 const EventEmitter = require('events').EventEmitter;
 const osmPbfBlobDecode = require('./osm-pbf-blob-decode');
-const root = protobuf.loadSync(__dirname + '/protos/file-format.proto');
-const messages = {
-  blobHeader: root.lookupType('OSMPBF.BlobHeader'),
-  blob: root.lookupType('OSMPBF.Blob')
-};
+const {readBlobHeader, readBlob} = require('./protos/fileformat-pbf');
 
 class OsmPbfStreamReader {
 
@@ -38,10 +34,12 @@ class OsmPbfStreamReader {
 
   _clearProcessedBuffer() {
     const newBufferLength = this.buffer.length - this.bufferPointer;
-    const currentBuffer = this.buffer;
-    this.buffer = Buffer.alloc(newBufferLength);
-    for (let i = 0; i < newBufferLength; i++) {
-      this.buffer[i] = currentBuffer[i + this.bufferPointer];
+    if (newBufferLength === 0) {
+      this.buffer = Buffer.alloc(0);
+    } else {
+      const newBuffer = Buffer.allocUnsafe(newBufferLength);
+      this.buffer.copy(newBuffer, 0, this.bufferPointer);
+      this.buffer = newBuffer;
     }
     this.bufferPointer = 0;
   }
@@ -53,7 +51,7 @@ class OsmPbfStreamReader {
   _tryReadBlobHeaderLength() {
     this.bufferPointer = 0;
     if (this._lengthIsReadable(4)) {
-      const bufferLength4 = this.buffer.slice(this.bufferPointer, this.bufferPointer + 4);
+      const bufferLength4 = this.buffer.subarray(this.bufferPointer, this.bufferPointer + 4);
       this.bufferPointer += 4;
       return bufferLength4.readInt32BE();
     }
@@ -63,9 +61,9 @@ class OsmPbfStreamReader {
   _tryReadBlobHeader(blobHeaderLength) {
     this.bufferPointer = 4;
     if (this._lengthIsReadable(blobHeaderLength)) {
-      const blobHeaderBuffer = this.buffer.slice(this.bufferPointer, this.bufferPointer + blobHeaderLength);
+      const blobHeaderBuffer = this.buffer.subarray(this.bufferPointer, this.bufferPointer + blobHeaderLength);
       this.bufferPointer += blobHeaderLength;
-      return messages.blobHeader.decode(blobHeaderBuffer);
+      return readBlobHeader(new Pbf(blobHeaderBuffer));
     }
     return null;
   }
@@ -73,9 +71,9 @@ class OsmPbfStreamReader {
   _tryReadBlob(blobHeaderLength, blobHeader) {
     this.bufferPointer = 4 + blobHeaderLength;
     if (this._lengthIsReadable(blobHeader.datasize)) {
-      const blob = this.buffer.slice(this.bufferPointer, this.bufferPointer + blobHeader.datasize);
+      const blob = this.buffer.subarray(this.bufferPointer, this.bufferPointer + blobHeader.datasize);
       this.bufferPointer += blobHeader.datasize;
-      return messages.blob.decode(blob);
+      return readBlob(new Pbf(blob));
     }
     return null;
   }

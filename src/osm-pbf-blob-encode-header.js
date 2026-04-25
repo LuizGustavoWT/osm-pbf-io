@@ -1,15 +1,16 @@
-const protobuf = require('protobufjs');
+const Pbf = require('pbf').default;
 const encodeRawBlob = require('./encoder/raw-blob');
-const root = protobuf.loadSync(__dirname + '/protos/osm-format.proto');
-const message = root.lookupType('HeaderBlock');
+const {writeHeaderBlock} = require('./protos/osmformat-pbf');
 
 module.exports = (compress = true, dense = true) => {
-  const rawBlob = message.encode({
-    requiredFeatures: [
+  const pbf = new Pbf();
+  writeHeaderBlock({
+    required_features: [
       'OsmSchema-V0.6',
       ...(dense ? ['DenseNodes'] : [])
     ]
-  }).finish();
+  }, pbf);
+  const rawBlob = pbf.finish();
 
   return encodeRawBlob(rawBlob, compress);
 };

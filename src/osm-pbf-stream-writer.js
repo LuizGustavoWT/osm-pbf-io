@@ -1,11 +1,7 @@
 const fs = require('fs');
+const Pbf = require('pbf').default;
 const EventEmitter = require('events').EventEmitter;
-const protobuf = require('protobufjs');
-const root = protobuf.loadSync(__dirname + '/protos/file-format.proto');
-const messages = {
-  blobHeader: root.lookupType('BlobHeader'),
-  blob: root.lookupType('Blob')
-};
+const {writeBlobHeader, writeBlob} = require('./protos/fileformat-pbf');
 const osmPbfBlobEncode = require('./osm-pbf-blob-encode');
 const osmPbfBlobEncodeHeader = require('./osm-pbf-blob-encode-header');
 
@@ -25,19 +21,22 @@ class OsmPbfStreamWriter {
   }
 
   _flushBlockToFile(fileBlock, type = 'OSMData') {
-    const blob = messages.blob.encode(fileBlock).finish();
-    const blobHeader = messages.blobHeader.encode({
-      type: type,
-      datasize: blob.length
-    }).finish();
+    const blobPbf = new Pbf();
+    writeBlob(fileBlock, blobPbf);
+    const blob = blobPbf.finish();
+
+    const headerPbf = new Pbf();
+    writeBlobHeader({type: type, datasize: blob.length}, headerPbf);
+    const blobHeader = headerPbf.finish();
+
     const headerSize = blobHeader.length;
 
-    const headerSizeBuffer = Buffer.alloc(4);
+    const headerSizeBuffer = Buffer.allocUnsafe(4);
     headerSizeBuffer.writeInt32BE(headerSize);
 
     this.stream.write(headerSizeBuffer);
-    this.stream.write(blobHeader);
-    this.stream.write(blob);
+    this.stream.write(Buffer.from(blobHeader));
+    this.stream.write(Buffer.from(blob));
     this.events.emit('flush', headerSize + blobHeader.length + blob.length);
   }
 
@@ -63,9 +62,9 @@ class OsmPbfStreamWriter {
 
   finish() {
     this._flushGeos();
-    this.stream.end();
-    this.stream.close();
-    this.events.emit('finish');
+    this.stream.end(() => {
+      this.events.emit('finish');
+    });
   }
 
   on(eventName, listener) {

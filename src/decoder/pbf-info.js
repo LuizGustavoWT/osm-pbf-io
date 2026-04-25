@@ -7,7 +7,7 @@ module.exports = (pbfInfoObj, settings) => {
       timestamp: decodeTimestamp(pbfInfoObj.timestamp, settings.dateGranularity),
       changeSet: pbfInfoObj.changeset,
       uid: pbfInfoObj.uid,
-      username: settings.stringTable.s[pbfInfoObj.userSid]
+      username: settings.stringTable.s[pbfInfoObj.user_sid]
     };
   }
 
