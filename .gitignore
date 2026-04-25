@@ -94,4 +94,6 @@ typings/
 
 .idea/
 
+.npmrc
+
 # End of https://www.gitignore.io/api/node
